@@ -1,6 +1,7 @@
 import math
 import heapq
-
+import matplotlib.pyplot as plt
+import numpy as np
 # Define the Cell class
 class Cell:
     def __init__(self):
@@ -49,11 +50,12 @@ def trace_path(cell_details, dest):
     path.append((row, col))
     # Reverse the path to get the path from source to destination
     path.reverse()
-
+    
     # Print the path
     for i in path:
         print("->", i, end=" ")
     print()
+    return path
 
 # Implement the A* search algorithm
 def a_star_search(grid, src, dest):
@@ -118,9 +120,9 @@ def a_star_search(grid, src, dest):
                     cell_details[new_i][new_j].parent_j = j
                     print("The destination cell is found")
                     # Trace and print the path from source to destination
-                    trace_path(cell_details, dest)
+                    path=trace_path(cell_details, dest)
                     found_dest = True
-                    return
+                    return path
                 else:
                     # Calculate the new f, g, and h values
                     g_new = cell_details[i][j].g + 1.0
@@ -141,7 +143,39 @@ def a_star_search(grid, src, dest):
     # If the destination is not found after visiting all cells
     if not found_dest:
         print("Failed to find the destination cell")
-
+        
+def draw_maze(grid, src, dest, path=None):
+    # Convert the grid to a numpy array
+    grid_np = np.array(grid)
+    
+    # Create a figure and axis
+    fig, ax = plt.subplots(figsize=(8, 8))
+    
+    # Use a colormap (black for unblocked, white for blocked)
+    cmap = plt.cm.gray
+    ax.imshow(grid_np, cmap=cmap, interpolation='none')
+    
+    # Highlight the source and destination
+    ax.scatter(src[1], src[0], color='blue', label='Source', s=100)
+    ax.scatter(dest[1], dest[0], color='red', label='Destination', s=100)
+    
+    # If a path is provided, draw it
+    if path:
+        for step in path:
+            ax.scatter(step[1], step[0], color='green', s=50)
+    
+    # Add gridlines
+    ax.set_xticks(np.arange(-0.5, grid_np.shape[1], 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, grid_np.shape[0], 1), minor=True)
+    ax.grid(which='minor', color='black', linestyle='-', linewidth=0.5)
+    ax.tick_params(left=False, bottom=False, labelleft=False, labelbottom=False)
+    
+    # Add legend
+    ax.legend(loc='upper right')
+    
+    # Display the plot
+    plt.show()
+    
 def main():
     # Define the grid (1 for unblocked, 0 for blocked)
     grid = [
@@ -159,9 +193,11 @@ def main():
     # Define the source and destination
     src = [8, 0]
     dest = [0, 0]
-
+    path = [(8, 0), (7, 0), (6, 0), (5, 0), (4, 0), (3, 2), (2, 2), (1, 2), (0, 0)]
     # Run the A* search algorithm
-    a_star_search(grid, src, dest)
+    path=a_star_search(grid, src, dest)
+    
+    draw_maze(grid, src, dest, path) # Draw the maze
 
 if __name__ == "__main__":
     main()
