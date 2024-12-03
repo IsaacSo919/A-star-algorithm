@@ -2,6 +2,8 @@ import math
 import heapq
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.animation as animation
+from matplotlib.widgets import Button
 # Define the Cell class
 class Cell:
     def __init__(self):
@@ -91,6 +93,7 @@ def a_star_search(grid, src, dest):
     # Initialize the open list (cells to be visited) with the start cell
     open_list = []
     heapq.heappush(open_list, (0.0, i, j))
+    visited_cells = []  # Store visited cells for animation
 
     # Initialize the flag for whether destination is found
     found_dest = False
@@ -104,7 +107,9 @@ def a_star_search(grid, src, dest):
         i = p[1]
         j = p[2]
         closed_list[i][j] = True
-
+        # Add the current cell to the visited list
+        visited_cells.append((i, j)) 
+        
         # For each direction, check the successors
         directions = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]
         for dir in directions:
@@ -119,10 +124,9 @@ def a_star_search(grid, src, dest):
                     cell_details[new_i][new_j].parent_i = i
                     cell_details[new_i][new_j].parent_j = j
                     print("The destination cell is found")
-                    # Trace and print the path from source to destination
-                    path=trace_path(cell_details, dest)
                     found_dest = True
-                    return path
+                    
+                    return trace_path(cell_details, dest), visited_cells
                 else:
                     # Calculate the new f, g, and h values
                     g_new = cell_details[i][j].g + 1.0
@@ -176,6 +180,47 @@ def draw_maze(grid, src, dest, path=None):
     # Display the plot
     plt.show()
     
+def animate_search(grid, src, dest, visited_cells, path=None):
+    grid_np = np.array(grid)
+    fig, ax = plt.subplots(figsize=(8, 8))
+
+    # Display the static grid
+    ax.imshow(1 - grid_np, cmap=plt.cm.gray_r, interpolation='none')
+
+    # Mark the source and destination
+    ax.scatter(src[1], src[0], color='blue', label='Source', s=100)
+    ax.scatter(dest[1], dest[0], color='red', label='Destination', s=100)
+
+    # Add gridlines
+    ax.set_xticks(np.arange(-0.5, grid_np.shape[1], 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, grid_np.shape[0], 1), minor=True)
+    ax.grid(which='minor', color='black', linestyle='-', linewidth=0.5)
+    ax.tick_params(left=False, bottom=False, labelleft=False, labelbottom=False)
+
+    # Initialize scatter points for visited cells and path
+    visited_scatter = ax.scatter([], [], color='yellow', label='Visited', s=50)
+    path_scatter = ax.scatter([], [], color='green', label='Path', s=50)
+
+    ax.legend(loc='upper right')
+
+    # Animation update function
+    def update(frame):
+        if frame < len(visited_cells):
+            # Update visited cells
+            visited_scatter.set_offsets([[cell[1], cell[0]] for cell in visited_cells[:frame + 1]])
+        elif path and frame < len(visited_cells) + len(path):
+            # Update path cells
+            path_index = frame - len(visited_cells)
+            path_scatter.set_offsets([[step[1], step[0]] for step in path[:path_index + 1]])
+        return visited_scatter, path_scatter
+
+    # Total frames for the animation
+    total_frames = len(visited_cells) + (len(path) if path else 0)
+    ani = animation.FuncAnimation(fig, update, frames=total_frames, interval=300, repeat=False)
+
+    plt.show()
+
+    
 def main():
     # Define the grid (1 for unblocked, 0 for blocked)
     grid = [
@@ -193,11 +238,9 @@ def main():
     # Define the source and destination
     src = [8, 0]
     dest = [0, 0]
-    path = [(8, 0), (7, 0), (6, 0), (5, 0), (4, 0), (3, 2), (2, 2), (1, 2), (0, 0)]
-    # Run the A* search algorithm
-    path=a_star_search(grid, src, dest)
-    
-    draw_maze(grid, src, dest, path) # Draw the maze
+    path, visited_cells = a_star_search(grid, src, dest)# Run the A* search algorithm
+    animate_search(grid, src, dest, visited_cells, path)
+    # draw_maze(grid, src, dest, path) # Draw the maze
 
 if __name__ == "__main__":
     main()
