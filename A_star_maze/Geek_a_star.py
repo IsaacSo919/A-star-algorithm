@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.animation as animation
 from matplotlib.widgets import Button
+
 # Define the Cell class
 class Cell:
     def __init__(self):
