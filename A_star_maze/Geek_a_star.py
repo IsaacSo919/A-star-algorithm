@@ -31,12 +31,12 @@ def is_destination(row, col, dest):
     return row == dest[0] and col == dest[1]
 
 # Calculate the heuristic value of a cell (Euclidean distance to destination)
-def calculate_h_value(row, col, dest):
+def cal_h_value(row, col, dest):
     return ((row - dest[0]) ** 2 + (col - dest[1]) ** 2) ** 0.5
 
 # Trace the path from source to destination
 def trace_path(cell_details, dest):
-    print("The Path is ")
+    print("The Path: ")
     path = []
     row = dest[0]
     col = dest[1]
@@ -131,7 +131,7 @@ def a_star_search(grid, src, dest):
                 else:
                     # Calculate the new f, g, and h values
                     g_new = cell_details[i][j].g + 1.0
-                    h_new = calculate_h_value(new_i, new_j, dest)
+                    h_new = cal_h_value(new_i, new_j, dest)
                     f_new = g_new + h_new
 
                     # If the cell is not in the open list or the new f value is smaller
